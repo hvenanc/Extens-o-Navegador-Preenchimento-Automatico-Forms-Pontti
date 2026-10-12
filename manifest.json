@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Preenchedor Fiscal - Produtos",
+  "version": "1.1",
+  "description": "Preenche automaticamente campos fiscais e calcula margens de lucro (30% e 35%) no cadastro de produtos.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://ponttierp1.com.br/acmateriais/produto/cad_produto.php*"],
+      "js": ["override-alert.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://ponttierp1.com.br/acmateriais/produto/cad_produto.php*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://ponttierp.com/granderecifesucupira/produto/cad_produto.php*"],
+      "js": ["override-alert.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://ponttierp.com/granderecifesucupira/produto/cad_produto.php*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}

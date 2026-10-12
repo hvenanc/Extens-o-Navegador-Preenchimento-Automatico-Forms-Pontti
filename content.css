@@ -1,0 +1,73 @@
+#preenchedor-fiscal-panel {
+  position: fixed;
+  top: 20px; /* Move o painel para o topo */
+  right: 20px; /* Mantém no canto direito */
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  font-family: Arial, sans-serif;
+}
+
+#preenchedor-fiscal-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.preenchedor-fiscal-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #333;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.preenchedor-fiscal-btn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.preenchedor-fiscal-btn:hover {
+  background: #256428;
+}
+
+.preenchedor-fiscal-btn-blue {
+  background: #1976d2;
+}
+
+.preenchedor-fiscal-btn-blue:hover {
+  background: #115293;
+}
+
+#preenchedor-fiscal-status {
+  position: fixed;
+  top: 260px; /* Ajustado para aparecer logo abaixo do painel que agora está no topo */
+  right: 20px;
+  z-index: 999999;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  max-width: 280px;
+  white-space: pre-line;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  display: none;
+}
