@@ -15,10 +15,9 @@ document.getElementById('btn5405').addEventListener('click', () => aplicarNaAba(
 document.getElementById('btnMargem30').addEventListener('click', () => aplicarMargemNaAba(0.70));
 document.getElementById('btnMargem35').addEventListener('click', () => aplicarMargemNaAba(0.65));
 
-// Listener para o novo botão de código
 document.getElementById('btnCodigoEsp').addEventListener('click', async () => {
   const statusEl = document.getElementById('status');
-  statusEl.textContent = 'Preenchendo...';
+  statusEl.textContent = 'A preencher...';
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const [{ result }] = await chrome.scripting.executeScript({
@@ -34,7 +33,7 @@ document.getElementById('btnCodigoEsp').addEventListener('click', async () => {
 
 async function aplicarNaAba(perfilChave) {
   const statusEl = document.getElementById('status');
-  statusEl.textContent = 'Preenchendo...';
+  statusEl.textContent = 'A preencher...';
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const importarCodigo = checkboxImportarCodigo.checked;
@@ -52,7 +51,7 @@ async function aplicarNaAba(perfilChave) {
 
 async function aplicarMargemNaAba(fator) {
   const statusEl = document.getElementById('status');
-  statusEl.textContent = 'Calculando...';
+  statusEl.textContent = 'A calcular...';
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const [{ result }] = await chrome.scripting.executeScript({
@@ -66,22 +65,19 @@ async function aplicarMargemNaAba(fator) {
   }
 }
 
-// Injetada na página para preencher o código
 function injetarCodigoEspecifico(codigoStr) {
   const logs = [];
   const el = document.querySelector('input[name="Codigo"]');
   if (!el) {
-    logs.push(`⚠ Campo Código não encontrado.`);
+    logs.push('⚠ Campo Código não encontrado.');
     return logs;
   }
   el.value = codigoStr;
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
+  ['input', 'change', 'blur'].forEach(ev => el.dispatchEvent(new Event(ev, { bubbles: true })));
   logs.push(`✔ Código preenchido → ${codigoStr}`);
   return logs;
 }
 
-// Injetada na página para calcular margem e salvar automaticamente
 function calcularEPreencherMargem(fator) {
   const logs = [];
   const custoInput = document.querySelector('input[name="Custo"]');
@@ -105,9 +101,9 @@ function calcularEPreencherMargem(fator) {
     const precoInput = document.getElementById(id);
     if (precoInput) {
       precoInput.value = precoFinal;
-      precoInput.dispatchEvent(new Event('input', { bubbles: true }));
-      precoInput.dispatchEvent(new Event('change', { bubbles: true }));
-      precoInput.dispatchEvent(new Event('blur', { bubbles: true }));
+      ['focus', 'keydown', 'input', 'keyup', 'change', 'blur'].forEach(ev => {
+        precoInput.dispatchEvent(new Event(ev, { bubbles: true }));
+      });
     }
   });
 
@@ -116,7 +112,9 @@ function calcularEPreencherMargem(fator) {
   logs.push('⏳ O produto será salvo automaticamente em 5 segundos...');
 
   setTimeout(() => {
-    const btnSalvar = document.querySelector('button[name="Alterar"][value="Salvar"]') || document.querySelector('button.bt_cadastro[type="submit"]');
+    const btnSalvar = document.querySelector('button[name="Cadastrar"][value="Salvar"]') ||
+                      document.querySelector('button[name="Alterar"][value="Salvar"]') ||
+                      document.querySelector('button.bt_cadastro[type="submit"]');
     if (btnSalvar) {
       btnSalvar.click();
     }
@@ -125,9 +123,14 @@ function calcularEPreencherMargem(fator) {
   return logs;
 }
 
-// Injetada na página para preencher os perfis fiscais (Revertida para síncrona sem delay)
 function preencherCamposFiscais(perfilChave, importarCodigo) {
   const logs = [];
+
+  function dispatchAllEvents(el) {
+    ['focus', 'keydown', 'keypress', 'input', 'keyup', 'change', 'blur'].forEach(ev => {
+      el.dispatchEvent(new Event(ev, { bubbles: true }));
+    });
+  }
 
   function setSelectByValue(selector, value, label) {
     const el = document.querySelector(selector);
@@ -152,8 +155,7 @@ function preencherCamposFiscais(perfilChave, importarCodigo) {
       return;
     }
     el.value = value;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
+    dispatchAllEvents(el);
     logs.push(`✔ ${label} → ${value}`);
   }
 
@@ -169,8 +171,7 @@ function preencherCamposFiscais(perfilChave, importarCodigo) {
       return;
     }
     target.value = source.value;
-    target.dispatchEvent(new Event('input', { bubbles: true }));
-    target.dispatchEvent(new Event('change', { bubbles: true }));
+    dispatchAllEvents(target);
     logs.push(`✔ ${label} → "${source.value}"`);
   }
 

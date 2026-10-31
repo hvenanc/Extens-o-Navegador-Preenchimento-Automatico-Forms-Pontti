@@ -1,6 +1,15 @@
 (function () {
-  // Evita injetar o painel mais de uma vez
+  if (window.innerWidth < 300 && window.innerHeight < 300) return;
   if (document.getElementById('preenchedor-fiscal-panel')) return;
+
+  function dispatchAllEvents(el) {
+    el.dispatchEvent(new Event('focus', { bubbles: true }));
+    el.dispatchEvent(new Event('keydown', { bubbles: true }));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('keyup', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new Event('blur', { bubbles: true }));
+  }
 
   function setSelectByValue(selector, value, label, logs) {
     const el = document.querySelector(selector);
@@ -25,8 +34,7 @@
       return;
     }
     el.value = value;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
+    dispatchAllEvents(el);
     logs.push(`✔ ${label} → ${value}`);
   }
 
@@ -42,12 +50,10 @@
       return;
     }
     target.value = source.value;
-    target.dispatchEvent(new Event('input', { bubbles: true }));
-    target.dispatchEvent(new Event('change', { bubbles: true }));
+    dispatchAllEvents(target);
     logs.push(`✔ ${label} → "${source.value}"`);
   }
 
-  // Perfis de tributação disponíveis
   const PERFIS = {
     '5102': { cfop: '289', st1: '102', st2: '102' },
     '5405': { cfop: '355', st1: '500', st2: '500' }
@@ -68,7 +74,6 @@
     copyValue('input[name="Titulo"]', 'input[name="Descricao_Etiqueta"]', 'Descrição Etiqueta ← Nome', logs);
   }
 
-  // Revertido para síncrono (sem o delay)
   function aplicarPerfil(chave, importarCodigo) {
     const perfil = PERFIS[chave];
     const logs = [];
@@ -91,7 +96,6 @@
     return logs;
   }
 
-  // --- FUNÇÃO DE MARGEM COM AUTO-SALVAR ---
   function aplicarMargem(fator) {
     const logs = [];
     const custoInput = document.querySelector('input[name="Custo"]');
@@ -115,9 +119,7 @@
       const precoInput = document.getElementById(id);
       if (precoInput) {
         precoInput.value = precoFinal;
-        precoInput.dispatchEvent(new Event('input', { bubbles: true }));
-        precoInput.dispatchEvent(new Event('change', { bubbles: true }));
-        precoInput.dispatchEvent(new Event('blur', { bubbles: true }));
+        dispatchAllEvents(precoInput);
       }
     });
 
@@ -126,7 +128,9 @@
     logs.push('⏳ O produto será salvo automaticamente em 5 segundos...');
 
     setTimeout(() => {
-      const btnSalvar = document.querySelector('button[name="Alterar"][value="Salvar"]') || document.querySelector('button.bt_cadastro[type="submit"]');
+      const btnSalvar = document.querySelector('button[name="Cadastrar"][value="Salvar"]') ||
+                        document.querySelector('button[name="Alterar"][value="Salvar"]') ||
+                        document.querySelector('button.bt_cadastro[type="submit"]');
       if (btnSalvar) {
         btnSalvar.click();
       }
@@ -164,7 +168,6 @@
   alertCheckboxWrapper.appendChild(document.createTextNode(' Bloquear Alertas'));
   panel.appendChild(alertCheckboxWrapper);
 
-  // Botão NOVO: Código Específico
   const btnCodigo = document.createElement('button');
   btnCodigo.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
   btnCodigo.textContent = 'Código: 790$90030020';
@@ -181,7 +184,6 @@
   btn5405.textContent = '5405 / 500';
   panel.appendChild(btn5405);
   
-  // Botões de Margem
   const btnMargem30 = document.createElement('button');
   btnMargem30.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
   btnMargem30.textContent = 'Margem 30% (/,70)';
@@ -198,7 +200,6 @@
   status.id = 'preenchedor-fiscal-status';
   document.body.appendChild(status);
 
-  // Carrega preferência salva
   if (chrome.storage && chrome.storage.local) {
     chrome.storage.local.get(['importarCodigo', 'bloquearAlertas'], (res) => {
       if (typeof res.importarCodigo === 'boolean') {
@@ -223,7 +224,6 @@
     status._timeout = setTimeout(() => { status.style.display = 'none'; }, 7000);
   }
 
-  // Eventos de Clique
   btnCodigo.addEventListener('click', () => {
     const logs = [];
     setInputValue('input[name="Codigo"]', '790$90030020', 'Código', logs);
