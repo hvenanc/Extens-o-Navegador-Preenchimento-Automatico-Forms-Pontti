@@ -96,7 +96,8 @@
     return logs;
   }
 
-  function aplicarMargem(fator) {
+  // --- FUNÇÃO DE MARGEM COM SUPORTE AOS DOIS TIPOS DE ARREDONDAMENTO ---
+  function aplicarMargem(fator, tipoArredondamento) {
     const logs = [];
     const custoInput = document.querySelector('input[name="Custo"]');
     if (!custoInput || !custoInput.value) {
@@ -112,8 +113,17 @@
     }
 
     let precoCalculado = custo / fator;
-    let precoArredondado = Math.floor(precoCalculado) + 0.90;
-    let precoFinal = precoArredondado.toFixed(2).replace('.', ',');
+    let precoFinal = '';
+
+    if (tipoArredondamento === 'meio') {
+      // Arredonda para o próximo 0,50 ou inteiro (ex: 6,48 -> 6,50 | 6,93 -> 7,00)
+      let precoArredondado = Math.ceil(precoCalculado * 2) / 2;
+      precoFinal = precoArredondado.toFixed(2).replace('.', ',');
+    } else {
+      // Lógica antiga (final ,90)
+      let precoArredondado = Math.floor(precoCalculado) + 0.90;
+      precoFinal = precoArredondado.toFixed(2).replace('.', ',');
+    }
 
     ['Preco1', 'Preco2', 'Preco3'].forEach(id => {
       const precoInput = document.getElementById(id);
@@ -124,7 +134,8 @@
     });
 
     let margemNome = fator === 0.70 ? '30%' : '35%';
-    logs.push(`✔ Margem ${margemNome} aplicada!\nCusto: R$ ${custo.toFixed(2).replace('.', ',')} → Venda: R$ ${precoFinal}`);
+    let regraNome = tipoArredondamento === 'meio' ? 'inteiro/0,50' : ',90';
+    logs.push(`✔ Margem ${margemNome} (${regraNome}) aplicada!\nCusto: R$ ${custo.toFixed(2).replace('.', ',')} → Venda: R$ ${precoFinal}`);
     logs.push('⏳ O produto será salvo automaticamente em 5 segundos...');
 
     setTimeout(() => {
@@ -139,7 +150,7 @@
     return logs;
   }
 
-  // Painel flutuante
+  // Montagem do painel flutuante
   const panel = document.createElement('div');
   panel.id = 'preenchedor-fiscal-panel';
 
@@ -184,15 +195,27 @@
   btn5405.textContent = '5405 / 500';
   panel.appendChild(btn5405);
   
-  const btnMargem30 = document.createElement('button');
-  btnMargem30.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
-  btnMargem30.textContent = 'Margem 30% (/,70)';
-  panel.appendChild(btnMargem30);
+  // 1. Margens Novas (,00 / ,50)
+  const btnMargem30Meio = document.createElement('button');
+  btnMargem30Meio.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
+  btnMargem30Meio.textContent = '30% (Inteiro / ,50)';
+  panel.appendChild(btnMargem30Meio);
 
-  const btnMargem35 = document.createElement('button');
-  btnMargem35.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
-  btnMargem35.textContent = 'Margem 35% (/,65)';
-  panel.appendChild(btnMargem35);
+  const btnMargem35Meio = document.createElement('button');
+  btnMargem35Meio.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
+  btnMargem35Meio.textContent = '35% (Inteiro / ,50)';
+  panel.appendChild(btnMargem35Meio);
+
+  // 2. Margens Antigas (,90)
+  const btnMargem30Antiga = document.createElement('button');
+  btnMargem30Antiga.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
+  btnMargem30Antiga.textContent = '30% Antiga (,90)';
+  panel.appendChild(btnMargem30Antiga);
+
+  const btnMargem35Antiga = document.createElement('button');
+  btnMargem35Antiga.className = 'preenchedor-fiscal-btn preenchedor-fiscal-btn-blue';
+  btnMargem35Antiga.textContent = '35% Antiga (,90)';
+  panel.appendChild(btnMargem35Antiga);
 
   document.body.appendChild(panel);
 
@@ -232,6 +255,10 @@
   
   btn5102.addEventListener('click', () => mostrarStatus(aplicarPerfil('5102', checkbox.checked)));
   btn5405.addEventListener('click', () => mostrarStatus(aplicarPerfil('5405', checkbox.checked)));
-  btnMargem30.addEventListener('click', () => mostrarStatus(aplicarMargem(0.70)));
-  btnMargem35.addEventListener('click', () => mostrarStatus(aplicarMargem(0.65)));
+
+  // Listeners dos 4 botões de margem
+  btnMargem30Meio.addEventListener('click', () => mostrarStatus(aplicarMargem(0.70, 'meio')));
+  btnMargem35Meio.addEventListener('click', () => mostrarStatus(aplicarMargem(0.65, 'meio')));
+  btnMargem30Antiga.addEventListener('click', () => mostrarStatus(aplicarMargem(0.70, '90')));
+  btnMargem35Antiga.addEventListener('click', () => mostrarStatus(aplicarMargem(0.65, '90')));
 })();

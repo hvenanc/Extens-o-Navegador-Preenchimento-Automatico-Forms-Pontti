@@ -12,8 +12,11 @@ checkboxImportarCodigo.addEventListener('change', () => {
 document.getElementById('btn5102').addEventListener('click', () => aplicarNaAba('5102'));
 document.getElementById('btn5405').addEventListener('click', () => aplicarNaAba('5405'));
 
-document.getElementById('btnMargem30').addEventListener('click', () => aplicarMargemNaAba(0.70));
-document.getElementById('btnMargem35').addEventListener('click', () => aplicarMargemNaAba(0.65));
+// Listeners dos 4 botões de margem no popup
+document.getElementById('btnMargem30Meio').addEventListener('click', () => aplicarMargemNaAba(0.70, 'meio'));
+document.getElementById('btnMargem35Meio').addEventListener('click', () => aplicarMargemNaAba(0.65, 'meio'));
+document.getElementById('btnMargem30Antiga').addEventListener('click', () => aplicarMargemNaAba(0.70, '90'));
+document.getElementById('btnMargem35Antiga').addEventListener('click', () => aplicarMargemNaAba(0.65, '90'));
 
 document.getElementById('btnCodigoEsp').addEventListener('click', async () => {
   const statusEl = document.getElementById('status');
@@ -49,7 +52,7 @@ async function aplicarNaAba(perfilChave) {
   }
 }
 
-async function aplicarMargemNaAba(fator) {
+async function aplicarMargemNaAba(fator, tipoArredondamento) {
   const statusEl = document.getElementById('status');
   statusEl.textContent = 'A calcular...';
   try {
@@ -57,7 +60,7 @@ async function aplicarMargemNaAba(fator) {
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: calcularEPreencherMargem,
-      args: [fator]
+      args: [fator, tipoArredondamento]
     });
     statusEl.textContent = result.join('\n');
   } catch (err) {
@@ -78,7 +81,7 @@ function injetarCodigoEspecifico(codigoStr) {
   return logs;
 }
 
-function calcularEPreencherMargem(fator) {
+function calcularEPreencherMargem(fator, tipoArredondamento) {
   const logs = [];
   const custoInput = document.querySelector('input[name="Custo"]');
   if (!custoInput || !custoInput.value) {
@@ -94,8 +97,15 @@ function calcularEPreencherMargem(fator) {
   }
 
   let precoCalculado = custo / fator;
-  let precoArredondado = Math.floor(precoCalculado) + 0.90;
-  let precoFinal = precoArredondado.toFixed(2).replace('.', ',');
+  let precoFinal = '';
+
+  if (tipoArredondamento === 'meio') {
+    let precoArredondado = Math.ceil(precoCalculado * 2) / 2;
+    precoFinal = precoArredondado.toFixed(2).replace('.', ',');
+  } else {
+    let precoArredondado = Math.floor(precoCalculado) + 0.90;
+    precoFinal = precoArredondado.toFixed(2).replace('.', ',');
+  }
 
   ['Preco1', 'Preco2', 'Preco3'].forEach(id => {
     const precoInput = document.getElementById(id);
@@ -108,7 +118,8 @@ function calcularEPreencherMargem(fator) {
   });
 
   let margemNome = fator === 0.70 ? '30%' : '35%';
-  logs.push(`✔ Margem ${margemNome} aplicada!\nCusto: R$ ${custo.toFixed(2).replace('.', ',')} → Venda: R$ ${precoFinal}`);
+  let regraNome = tipoArredondamento === 'meio' ? 'inteiro/0,50' : ',90';
+  logs.push(`✔ Margem ${margemNome} (${regraNome}) aplicada!\nCusto: R$ ${custo.toFixed(2).replace('.', ',')} → Venda: R$ ${precoFinal}`);
   logs.push('⏳ O produto será salvo automaticamente em 5 segundos...');
 
   setTimeout(() => {
